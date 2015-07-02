@@ -3,55 +3,26 @@ var PORT = 6969;
 var HOST = '0.0.0.0';
 var socketArray = [];
 
-net.createServer(function(client) {
-  console.log('client connected!');
+
+var server = net.createServer(function(client) {
+  console.log('CONNECTED: ' + client.remoteAddress + ':' + client.remotePort);
   socketArray.push(client);
-  console.log(socketArray);
+
   client.on('data', function(data) {
-    console.log('DATA ' + data);
-    for(var i = 0; i < socketArray.length; i++) {
-      socketArray[i].write(data);
+    console.log('SERVER BCAST FROM ' + client.remoteAddress + ':' + client.remotePort + ' : ' + data);
+    for (var i = 0; i < socketArray.length; i++) {
+      socketArray[i].write(client.remoteAddress + ':' + client.remotePort + ' : ' + data);
     }
-    // client.write(data);
   });
-  client.on('end', function(data){
-    console.log('client disconnected');
+
+  client.on('end', function() {
+    console.log('CLOSED: ' + client._peername.address + ':' + client._peername.port);
+    socketArray.splice(socketArray.indexOf(client), 1);
   });
-}).listen(PORT, HOST);
+})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// var server = net.createServer(clientConnected);
-
-
-// function clientConnected(client) {
-//   console.log('client connected');
-
-// readable.on('end', function() {
-//   console.log('wtf');
-// });
-
-
-//   client.on('data', function(chunk) {
-//     chunk.setEncoding('utf8');
-//     console.log(chunk);
-//   });
-// }
-
-
-
-// server.listen(PORT, HOST, function() {
-//   console.log('server bound to ', PORT);
-// });
+server.listen({ port : PORT, host : HOST }, function(data) {
+  var port = server.address().port;
+  var address = server.address().address;
+  console.log('Server listening on ' + address + ':' + port);
+});
